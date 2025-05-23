@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react'
 import phone from './services/phone'
+import './App.css'
+
+const Notification = ({ message }) => {
+    if (message === null) {
+        return null
+    }
+
+    return (
+        <div className='error'>
+            {message}
+        </div>
+    )
+}
 
 const Filter = (props) => {
     return (
@@ -44,7 +57,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
-
+  const [message, setMessage] = useState(null)
 
     useEffect(() => {
         phone.getAll().then(phones => setPersons(phones))
@@ -56,11 +69,27 @@ const App = () => {
           const pid = persons.filter((p) => p.name === newName)[0].id
           if (window.confirm(`${newName} is already added to the phonebook, replace the new number with a new one?`)) {
               phone.update(pid, { name: newName, number: newNumber })
-                  .then(updatedPhone => setPersons(persons.map((p) => p.name === newName ? updatedPhone : p)))
+                  .then(updatedPhone => {
+                      setMessage(
+                          `${newName} is updated`
+                      )
+                      setTimeout(() => {
+                          setMessage(null)
+                      }, 5000)
+                      setPersons(persons.map((p) => p.name === newName ? updatedPhone : p))
+                  })
           }
       } else {
           phone.create({ name: newName, number: newNumber })
-              .then(newPhone => setPersons(persons.concat(newPhone)))
+              .then(newPhone => {
+                  setMessage(
+                      `${newName} is added`
+                  )
+                  setTimeout(() => {
+                      setMessage(null)
+                  }, 5000)
+                  setPersons(persons.concat(newPhone))
+              })
       }
   }
 
@@ -80,10 +109,26 @@ const App = () => {
   }
 
     const handleDelete = (e) => {
-        if (window.confirm(`Delete ${e.target.name} ?`))
+        const name = e.target.name
+        if (window.confirm(`Delete ${name} ?`))
             phone.remove(e.target.id)
                 .then(removedPhone => {
+                    setMessage(
+                        `${removedPhone.name} is removed from server`
+                    )
+                    setTimeout(() => {
+                        setMessage(null)
+                    }, 5000)
                     setPersons(persons.filter(p => p.id !== removedPhone.id))
+                }).catch(e => {
+                    console.log(e)
+                    setMessage(
+                        `${name} was already removed from server`
+                    )
+                    setTimeout(() => {
+                        setMessage(null)
+                    }, 5000)
+                    setPersons(persons.filter(p => p.id !== e.id))
                 })
   }
 
@@ -91,6 +136,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter filter={filter} handleFilterChange={handleFilterChange}/>
       <PersonForm newName={newName} handleNameChange={handleNameChange}
         newNumber={newNumber} handleNumberChange={handleNumberChange} handleSubmit={handleSubmit}/>
