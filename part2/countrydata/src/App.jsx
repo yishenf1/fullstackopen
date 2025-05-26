@@ -11,7 +11,7 @@ const CountryDataDisplay = (props) => {
                     <p> Capital {props.countryData.capital}</p>
                     <p> Area {props.countryData.area}</p>
                     <h1> Languages </h1>
-                    {(Object.entries(props.countryData.languages)).map(l => <li>{l[1]}</li>)}
+                    {(Object.entries(props.countryData.languages)).map(l => <li key={l[0]}>{l[1]}</li>)}
                     <img src={props.countryData.flags.png} />
                </div>
              :null }
@@ -37,7 +37,7 @@ const CountriesDataDisplay = (props) => {
                  <CountryDataDisplay countryData={props.countryData[0]} show={true} />
             </div>
             : props.countryData.map(c =>
-                <div>
+                <div key={c.name.common}>
                     {c.name.common} 
 
                     <CountryDataDisplayContainer countryData={c} />
@@ -82,7 +82,7 @@ const App = () => {
       </form>
       <div>
         {countryData.length > 10 ? "Too many matches, specify another filter" :
-         <CountriesDataDisplaycontainer countryData={countryData}/>}
+                  <CountriesDataDisplay countryData={countryData}/>}
       </div>
     </div>
   )
