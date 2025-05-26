@@ -1,8 +1,39 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-const api_key = import.meta.env.VITE_SOME_KEY
+const api_key = import.meta.env.VITE_API_KEY
 
+
+const WeatherDataDisplay = (props) => {
+    const [weatherData, setWeatherData] = useState(null)
+
+
+    const getWeather = () => {
+        if (props.countryData)
+            console.log('fetching country')
+        axios
+            .get(`http://api.weatherapi.com/v1/current.json?key=${api_key}&q=${props.capital}`)
+            .then(response => setWeatherData(response.data.current))
+    }
+
+    useEffect(() => {
+        getWeather()
+    }, [])
+
+    return (
+        weatherData !== null ?
+            <div>
+                <h1>Weather in {props.capital}</h1>
+                <p>Temperature {weatherData.temp_c} Celsius </p>
+                <img src={weatherData.condition.icon}/>
+                <p> Wind {weatherData.wind_mph} mph </p>
+            </div>
+            : null
+    )
+}
 const CountryDataDisplay = (props) => {
+    
+
+    
     return (
         <div>
             {props.show ?
@@ -13,6 +44,7 @@ const CountryDataDisplay = (props) => {
                     <h1> Languages </h1>
                     {(Object.entries(props.countryData.languages)).map(l => <li key={l[0]}>{l[1]}</li>)}
                     <img src={props.countryData.flags.png} />
+                    <WeatherDataDisplay capital={props.countryData.capital[0]} />
                </div>
              :null }
         </div>
@@ -24,7 +56,7 @@ const CountryDataDisplayContainer = (props) => {
     return (
         <div>
             <button name={props.countryData.name.common} onClick={() => setShow(!show)}> show </button>
-            <CountryDataDisplay show={show} setShow={setShow}/>
+            <CountryDataDisplay show={show} setShow={setShow} countryData={props.countryData}    />
         </div>
     )
 }
@@ -55,7 +87,7 @@ const App = () => {
 
   useEffect(() => {
     console.log('effect run, country is now', country)
-
+    console.log(api_key)
     // skip if currency is not defined
     if (country) {
       console.log('fetching country')
